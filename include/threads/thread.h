@@ -27,6 +27,9 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. */
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
+#define NICE_DEFAULT 0
+#define RECENT_CPU_DEFAULT 0
+#define LOAD_AVG_DEFAULT 0
 
 /* A kernel thread or user process.
  *
@@ -87,6 +90,9 @@ typedef int tid_t;
  * blocked state is on a semaphore wait list. */
 struct thread {
     int init_priority;
+    int nice;
+    int recent_cpu;
+
 	/* Owned by thread.c. */
 	tid_t tid;                          /* Thread identifier. */
 	enum thread_status status;          /* Thread state. */
@@ -99,6 +105,7 @@ struct thread {
 	struct lock *wait_on_lock;
     struct list donations;
     struct list_elem donation_elem;
+    struct list_elem allelem;
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -117,7 +124,7 @@ struct thread {
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
-extern bool thread_mlfqs;
+extern bool  thread_mlfqs;
 
 void thread_init (void);
 void thread_start (void);
@@ -159,4 +166,12 @@ void donate_priority (void);
 void remove_with_lock (struct lock *lock);
 void refresh_priority (void);
 
+
+void mlfqs_calculate_priority (struct thread *t);
+void mlfqs_calculate_recent_cpu (struct thread *t);
+void mlfqs_calculate_load_avg (void);
+
+void mlfqs_increment_recent_cpu (void);
+void mlfqs_recalculate_recent_cpu (void);
+void mlfqs_recalculate_priority (void);
 #endif /* threads/thread.h */
